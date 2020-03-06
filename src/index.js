@@ -37,11 +37,12 @@ function createResizeRequest(size, existingLoaders, resource) {
   return `require(${JSON.stringify(remainingRequest)})`;
 }
 
-function createPlaceholderRequest(resource, size, lightweight) {
+function createPlaceholderRequest(resource, size, lightweight, blurEdges) {
   const loaderOptions = {
     pathname: path.join(__dirname, './placeholder-loader'),
     query: {
       lightweight,
+      blurEdges,
     },
   };
 
@@ -128,6 +129,18 @@ function isLightweight(loaderQuery, resourceQuery) {
   return false;
 }
 
+function isBlurEdges(loaderQuery, resourceQuery) {
+  if (loaderQuery.blurEdges !== undefined) {
+    return loaderQuery.blurEdges;
+  }
+
+  if (resourceQuery.blurEdges !== undefined) {
+    return resourceQuery.blurEdges;
+  }
+
+  return false;
+}
+
 export default function srcSetLoader(content) {
   return content;
 }
@@ -139,6 +152,11 @@ srcSetLoader.pitch = function srcSetLoaderPitch(remainingRequest) {
   const lightweight = isLightweight(loaderQuery, resourceQuery);
   if (typeof lightweight !== 'boolean') {
     throw new TypeError(`srcset-loader: "?lightweight=${lightweight}" is invalid - expected a boolean.`);
+  }
+
+  const blurEdges = isBlurEdges(loaderQuery, resourceQuery);
+  if (typeof blurEdges !== 'boolean') {
+    throw new TypeError(`srcset-loader: "?blurEdges=${blurEdges}" is invalid - expected a boolean.`);
   }
 
   // check it isn't undefined so the resource can disable the loader configuration with `false`.
@@ -168,7 +186,7 @@ srcSetLoader.pitch = function srcSetLoaderPitch(remainingRequest) {
     : '';
 
   const placeholderScript = placeholder
-    ? `placeholder: ${createPlaceholderRequest(resource, placeholder, lightweight)},`
+    ? `placeholder: ${createPlaceholderRequest(resource, placeholder, lightweight, blurEdges)},`
     : '';
 
   return `

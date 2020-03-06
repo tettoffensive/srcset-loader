@@ -36,7 +36,7 @@ function getColor(buffer, imageType) {
 }
 
 function createPlaceholder(content, options) {
-  const { size: width, lightweight } = options;
+  const { size: width, lightweight, blurEdges } = options;
 
   let size;
   let placeholderUrl;
@@ -49,9 +49,11 @@ function createPlaceholder(content, options) {
         return imageUrl;
       }
 
+      const blurEdgeString = blurEdges ? `x="-50%" y="-50%" width="200%" height="200%"` : '';
+
       const blurredImage = (
         `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${size.width} ${size.height}">
-          <filter id="x">
+          <filter id="x" ${blurEdgeString}>
             <feGaussianBlur stdDeviation="1" />
           </filter>
           <image width="100%" height="100%" xlink:href="${imageUrl}" filter="url(#x)"/>
@@ -79,7 +81,7 @@ function createPlaceholder(content, options) {
 }
 
 /**
- * Query: lightweight (bool), size (?number)
+ * Query: lightweight (bool), size (?number), blurEdges (bool)
  */
 module.exports = function placeholderLoader(content) {
   if (this.cacheable) {
